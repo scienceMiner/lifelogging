@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>My Diary</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="left">
+      <button id="editTab" class="tab active" onclick="showScreen('editScreen', this)" aria-controls="editScreen">✏ Edit</button>
+      <button id="viewTab" class="tab" onclick="showScreen('viewScreen', this)" aria-controls="viewScreen">📖 View</button>
+    </div>
+    <div class="right">
+      <button id="themeBtn" class="icon-btn" title="Toggle theme" aria-label="Toggle theme" onclick="toggleTheme()">🌓</button>
+    </div>
+  </header>
+
+  <main id="appMain">
+    <section id="editScreen" class="screen active-screen" aria-labelledby="editTab">
+      <h1 class="sr-only">Edit Entry</h1>
+      <label for="entryDate" class="label">Date</label>
+      <input type="date" id="entryDate" class="control" />
+      <label for="entryText" class="label">Text</label>
+      <textarea id="entryText" class="control" placeholder="Write your thoughts..."></textarea>
+      <button class="btn primary" onclick="saveEntry()">💾 Save</button>
+    </section>
+
+    <section id="viewScreen" class="screen" aria-labelledby="viewTab">
+      <h1 class="sr-only">View Entries</h1>
+      <input type="text" id="searchBox" class="control sticky-search"
+             placeholder="Search text or date (e.g. 01 JAN 2025)" oninput="renderEntries()" />
+      <div id="viewEntries" class="entries" role="list"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <small>Swipe ⬅️➡️ to switch screens</small>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
