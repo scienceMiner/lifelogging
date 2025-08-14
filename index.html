@@ -1,61 +1,44 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>My Diary</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f172a">
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diary PWA</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#121212">
+<link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <header class="app-header">
-    <div class="left">
-      <button id="editTab" class="tab active" onclick="showScreen('editScreen', this)" aria-controls="editScreen">✏ Edit</button>
-      <button id="viewTab" class="tab" onclick="showScreen('viewScreen', this)" aria-controls="viewScreen">📖 View</button>
-    </div>
-    <div class="right">
-      <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings" onclick="openSettings()">⚙️</button>
-    </div>
-  </header>
+<body class="dark-mode">
 
-  <main id="appMain">
-    <section id="editScreen" class="screen active-screen" aria-labelledby="editTab">
-      <h1 class="sr-only">Edit Entry</h1>
-      <label for="entryDate" class="label">Date</label>
-      <input type="date" id="entryDate" class="control" />
-      <label for="entryText" class="label">Text</label>
-      <textarea id="entryText" class="control" placeholder="Write your thoughts..."></textarea>
-      <button class="btn primary" onclick="saveEntry()">💾 Save</button>
-    </section>
+<header>
+  <button id="editBtn">Edit</button>
+  <button id="viewBtn">View</button>
+  <button id="settingsBtn">⚙️</button>
+</header>
 
-    <section id="viewScreen" class="screen" aria-labelledby="viewTab">
-      <h1 class="sr-only">View Entries</h1>
-      <input type="text" id="searchBox" class="control sticky-search"
-             placeholder="Search text or date (e.g. 01 JAN 2025)" oninput="renderEntries()" />
-      <div id="viewEntries" class="entries" role="list"></div>
-    </section>
-  </main>
+<main id="editScreen">
+  <input type="date" id="entryDate" />
+  <textarea id="entryText" placeholder="Write your diary entry..."></textarea>
+  <button id="saveEntry">Save Entry</button>
+</main>
 
-  <footer class="app-footer">
-    <small>Swipe ⬅️➡️ to switch screens</small>
-  </footer>
+<main id="viewScreen" style="display:none;">
+  <input type="text" id="searchBox" placeholder="Search entries..." />
+  <div id="entriesList"></div>
+</main>
 
-  <!-- Settings Modal -->
-  <div id="backdrop" class="backdrop hidden" onclick="closeSettings()"></div>
-  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-    <div class="modal-content">
-      <h2 id="settingsTitle">Settings</h2>
-      <div class="modal-actions">
-        <button class="btn" onclick="triggerUpload()">⬆️ Import XML</button>
-        <button class="btn" onclick="downloadXML()">⬇️ Export XML</button>
-        <input type="file" id="fileInput" accept=".xml" class="hidden" />
-      </div>
-      <div id="importResult" class="import-result" aria-live="polite"></div>
-      <button class="btn outline" onclick="closeSettings()">Close</button>
-    </div>
+<!-- Settings Modal (hidden by default) -->
+<div id="settingsModal" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeSettings" class="close">&times;</span>
+    <h2>Settings</h2>
+    <button id="importXML">Import XML</button>
+    <input type="file" id="xmlFileInput" accept=".xml" style="display:none;">
+    <button id="exportXML">Export XML</button>
   </div>
+</div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
