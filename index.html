@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>My Diary</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -13,7 +15,7 @@
       <button id="viewTab" class="tab" onclick="showScreen('viewScreen', this)" aria-controls="viewScreen">📖 View</button>
     </div>
     <div class="right">
-      <button id="themeBtn" class="icon-btn" title="Toggle theme" aria-label="Toggle theme" onclick="toggleTheme()">🌓</button>
+      <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings" onclick="openSettings()">⚙️</button>
     </div>
   </header>
 
@@ -38,6 +40,21 @@
   <footer class="app-footer">
     <small>Swipe ⬅️➡️ to switch screens</small>
   </footer>
+
+  <!-- Settings Modal -->
+  <div id="backdrop" class="backdrop hidden" onclick="closeSettings()"></div>
+  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-content">
+      <h2 id="settingsTitle">Settings</h2>
+      <div class="modal-actions">
+        <button class="btn" onclick="triggerUpload()">⬆️ Import XML</button>
+        <button class="btn" onclick="downloadXML()">⬇️ Export XML</button>
+        <input type="file" id="fileInput" accept=".xml" class="hidden" />
+      </div>
+      <div id="importResult" class="import-result" aria-live="polite"></div>
+      <button class="btn outline" onclick="closeSettings()">Close</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

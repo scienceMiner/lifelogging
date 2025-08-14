@@ -1,7 +1,6 @@
 // ===== Constants & utilities =====
 const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 const STORAGE_KEY = "diaryXML";
-const THEME_KEY = "diaryTheme"; // 'light' | 'dark' | ''
 
 function isoToday() {
   const d = new Date();
@@ -72,24 +71,6 @@ function fmtDate(day, monthIndex, year) {
   return `${String(day).padStart(2,"0")} ${MONTHS[monthIndex]} ${year}`;
 }
 
-// ===== Theme =====
-function applyTheme(theme) {
-  const root = document.documentElement;
-  root.classList.remove('dark','force-light','force-dark');
-  if (theme === 'dark') {
-    root.classList.add('dark','force-dark');
-  } else if (theme === 'light') {
-    root.classList.add('force-light');
-  }
-}
-
-function toggleTheme() {
-  const curr = localStorage.getItem(THEME_KEY) || '';
-  const next = curr === 'dark' ? 'light' : (curr === 'light' ? '' : 'dark');
-  localStorage.setItem(THEME_KEY, next);
-  applyTheme(next);
-}
-
 // ===== UI navigation =====
 function showScreen(id, btn) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active-screen"));
@@ -100,7 +81,6 @@ function showScreen(id, btn) {
 }
 
 function goLeftRight(direction) {
-  // direction: -1 for left swipe (go to View), +1 for right swipe (go to Edit)
   const editBtn = document.getElementById('editTab');
   const viewBtn = document.getElementById('viewTab');
   const editVisible = document.getElementById('editScreen').classList.contains('active-screen');
@@ -137,11 +117,11 @@ function saveEntry() {
   node.textContent = text;
 
   saveXMLDoc(doc);
-  document.getElementById("entryText").value = "";
   alert("Entry saved.");
   renderEntries();
 }
 
+// ===== Render list + search =====
 function renderEntries() {
   const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
   const wrap = document.getElementById("viewEntries");
@@ -175,27 +155,103 @@ function renderEntries() {
   }
 }
 
+// ===== Edit auto-fill on date change =====
 function onDateChangePrefill() {
   const iso = document.getElementById("entryDate").value;
   const parts = partsFromISO(iso);
-  if (!parts) return;
+  const textarea = document.getElementById("entryText");
+  if (!parts) { textarea.value = ""; return; }
   const doc = loadXML();
   const node = findEntry(doc, parts.day, parts.monthIndex, parts.year);
-  document.getElementById("entryText").value = node ? (node.textContent || "") : "";
+  textarea.value = node ? (node.textContent || "") : "";
+}
+
+// ===== Settings modal + import/export =====
+function openSettings(){
+  document.getElementById('backdrop').classList.remove('hidden');
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+function closeSettings(){
+  document.getElementById('backdrop').classList.add('hidden');
+  document.getElementById('settingsModal').classList.add('hidden');
+}
+function triggerUpload(){
+  const input = document.getElementById('fileInput');
+  input.value = '';
+  input.click();
+}
+document.addEventListener('change', function(e){
+  if (e.target && e.target.id === 'fileInput' && e.target.files && e.target.files[0]) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const res = importXMLString(String(reader.result || ""));
+        document.getElementById('importResult').textContent = `Imported: ${res.added} added, ${res.updated} updated, ${res.skipped} skipped.`;
+        renderEntries();
+        onDateChangePrefill();
+      } catch (err) {
+        document.getElementById('importResult').textContent = 'Import failed: ' + (err && err.message ? err.message : 'Unknown error');
+      }
+    };
+    reader.onerror = () => {
+      document.getElementById('importResult').textContent = 'Failed to read file.';
+    };
+    reader.readAsText(file);
+  }
+});
+
+function importXMLString(xmlStr){
+  const incoming = clampDiaryXML(xmlStr);
+  const inEntries = Array.from(incoming.querySelectorAll('entry'));
+  const doc = loadXML();
+  const diary = doc.querySelector('diary');
+  let added=0, updated=0, skipped=0;
+  for (const e of inEntries) {
+    const day = parseInt(e.getAttribute('day'), 10);
+    const month = e.getAttribute('month');
+    const year = parseInt(e.getAttribute('year'), 10);
+    const monthIndex = MONTHS.indexOf(month);
+    if (!Number.isFinite(day) || monthIndex < 0 || !Number.isFinite(year)) { skipped++; continue; }
+    const text = e.textContent || "";
+    const existing = findEntry(doc, day, monthIndex, year);
+    if (existing) {
+      existing.textContent = text;
+      updated++;
+    } else {
+      const node = doc.createElement('entry');
+      node.setAttribute('day', String(day));
+      node.setAttribute('month', MONTHS[monthIndex]);
+      node.setAttribute('year', String(year));
+      node.textContent = text;
+      diary.appendChild(node);
+      added++;
+    }
+  }
+  saveXMLDoc(doc);
+  return {added, updated, skipped};
+}
+
+function downloadXML(){
+  const doc = loadXML();
+  const xml = new XMLSerializer().serializeToString(doc);
+  const blob = new Blob([xml], {type: 'application/xml'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'diary.xml';
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(a.href);
+  a.remove();
 }
 
 // ===== Boot =====
 document.addEventListener("DOMContentLoaded", () => {
-  // Theme
-  applyTheme(localStorage.getItem(THEME_KEY) || '');
-
-  // Date default + prefill
   const dateEl = document.getElementById("entryDate");
   dateEl.value = isoToday();
   dateEl.addEventListener("change", onDateChangePrefill);
   onDateChangePrefill();
 
-  // Swipe gestures
   const main = document.getElementById('appMain');
   let startX = null;
   let startY = null;
@@ -208,13 +264,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (startX === null) return;
     const dx = (e.changedTouches && e.changedTouches[0].clientX) - startX;
     const dy = (e.changedTouches && e.changedTouches[0].clientY) - startY;
-    // Guard: ignore mostly vertical scrolls
     if (Math.abs(dx) > 60 && Math.abs(dy) < 40) {
       goLeftRight(dx < 0 ? -1 : 1);
     }
     startX = startY = null;
   });
 
-  // Initial render
   renderEntries();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+  }
 });

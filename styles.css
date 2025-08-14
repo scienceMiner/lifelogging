@@ -1,21 +1,11 @@
 :root{
-  --primary:#4cafef;
-  --bg:#f6f8fb;
-  --card:#ffffff;
-  --text:#111111;
-  --muted:#6b7280;
-  --border:#d1d5db;
-  --radius:14px;
-  --shadow:0 2px 6px rgba(0,0,0,.08);
-}
-
-:root.dark{
   --primary:#8ab4f8;
   --bg:#0f172a;
   --card:#111827;
   --text:#e5e7eb;
   --muted:#9ca3af;
   --border:#374151;
+  --radius:14px;
   --shadow:0 2px 6px rgba(0,0,0,.35);
 }
 
@@ -33,7 +23,7 @@ body{
   position:sticky; top:0; z-index:10;
   display:flex; align-items:center; justify-content:space-between;
   gap:8px; padding:8px 10px;
-  background:var(--primary); color:#fff;
+  background:var(--primary); color:#0b1020;
 }
 .app-header .left{ display:flex; gap:8px; flex:1 }
 .app-header .right{ display:flex; gap:8px }
@@ -43,12 +33,12 @@ body{
   padding:14px 10px;
   border:0; border-radius:10px;
   background:rgba(255,255,255,.15);
-  color:#fff; font-weight:700; font-size:17px;
+  color:#0b1020; font-weight:700; font-size:17px;
 }
-.tab.active{ background:#fff; color:var(--primary); }
+.tab.active{ background:#0b1020; color:var(--primary); }
 
 .icon-btn{
-  border:0; background:#fff; color:var(--primary);
+  border:0; background:#0b1020; color:var(--primary);
   padding:10px 12px; border-radius:10px; font-size:18px; cursor:pointer;
   box-shadow:var(--shadow);
 }
@@ -71,16 +61,19 @@ textarea.control{ min-height:160px; resize:vertical }
   border-radius:var(--radius); cursor:pointer;
   box-shadow:var(--shadow);
 }
-.btn.primary{ background:var(--primary); color:#fff }
+.btn.primary{ background:var(--primary); color:#0b1020 }
+.btn.outline{
+  background:transparent; border:1px solid var(--border); color:var(--text);
+}
 
 .sticky-search{
   position:sticky; top:8px; z-index:5; background:var(--card);
-  box-shadow:0 1px 0 rgba(0,0,0,.04);
+  box-shadow:0 1px 0 rgba(0,0,0,.12);
 }
 
 .entries{
   margin-top:10px;
-  max-height:calc(100vh - 220px);
+  max-height:calc(100vh - 240px);
   overflow:auto;
   padding-bottom:12px;
 }
@@ -106,7 +99,26 @@ textarea.control{ min-height:160px; resize:vertical }
   overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
 }
 
-/* Respect system theme on first load */
-@media (prefers-color-scheme: dark) {
-  :root:not(.force-light):not(.force-dark){ color-scheme: dark; }
+.hidden{ display:none }
+
+/* Modal */
+.backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.5);
 }
+.modal{
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  padding:20px;
+}
+.modal .modal-content{
+  width:min(520px, 92vw);
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px;
+}
+.modal .modal-actions{
+  display:flex; gap:10px; flex-wrap:wrap;
+}
+.import-result{ margin-top:8px; color:var(--muted); font-size:14px }
