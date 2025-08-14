@@ -1,4 +1,4 @@
-const CACHE_NAME = "diary-cache-v4";
+const CACHE_NAME = "diary-cache-v1";
 const ASSETS = [
   "./",
   "./index.html",
@@ -16,22 +16,15 @@ self.addEventListener("install", event => {
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : Promise.resolve())))
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    )
   );
   self.clients.claim();
 });
 
 self.addEventListener("fetch", event => {
-  const url = new URL(event.request.url);
-  if (url.origin === location.origin) {
-    event.respondWith(
-      caches.match(event.request).then(resp => resp || fetch(event.request).then(networkResp => {
-        if (event.request.method === "GET") {
-          const copy = networkResp.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(()=>{});
-        }
-        return networkResp;
-      }).catch(() => caches.match("./index.html")))
-    );
-  }
+  event.respondWith(
+    caches.match(event.request).then(resp => resp || fetch(event.request))
+  );
 });
